@@ -1,0 +1,93 @@
+￼
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biometric Authentication (Fingerprint/FaceID)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        #status {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        #authenticateBtn {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Biometric Authentication</h1>
+    <p>Click the button below to authenticate using your device's fingerprint (TouchID) or Face recognition (FaceID).</p>
+
+    <!-- Button for initiating authentication -->
+    <button id="authenticateBtn">Authenticate with Fingerprint/FaceID</button>
+    
+    <!-- Status message will appear here -->
+    <p id="status"></p>
+
+    <script>
+        // Function to handle the WebAuthn authentication process
+        async function authenticate() {
+            const status = document.getElementById("status");
+
+            try {
+                // Check if WebAuthn is supported by the browser
+                if (!window.PublicKeyCredential) {
+                    status.textContent = "WebAuthn is not supported on this device or browser.";
+                    return;
+                }
+
+                // Dummy authentication options - typically, these are provided by your server
+                const publicKey = {
+                    challenge: Uint8Array.from("randomChallengeForVerification", c => c.charCodeAt(0)),
+                    rp: {
+                        name: "Example Hospital" // Name of the service (hospital, system, etc.)
+                    },
+                    user: {
+                        id: Uint8Array.from("user123", c => c.charCodeAt(0)), // Replace with actual user ID
+                        name: "user@example.com",  // Replace with actual user name or email
+                        displayName: "John Doe"   // Display name for the user
+                    },
+                    pubKeyCredParams: [{ type: "public-key", alg: -7 }], // Using the 'ES256' algorithm
+                    authenticatorSelection: {
+                        authenticatorAttachment: "platform", // Using built-in device authenticators (TouchID/FaceID)
+                        userVerification: "required"         // Ensure biometric authentication is required
+                    },
+                    timeout: 60000,  // Set the timeout duration (1 minute)
+                    attestation: "direct" // Direct attestation
+                };
+
+                // Initiate the credential creation process
+                const credential = await navigator.credentials.create({ publicKey });
+
+                // Display success status and credential details
+                status.textContent = "Authentication successful!";
+                console.log("Credential:", credential);
+
+                // Here, in a real implementation, you would send the credential information to your server for verification.
+
+            } catch (error) {
+                // Handle errors (e.g., if WebAuthn is not supported, or user cancels the biometric prompt)
+                console.error(error);
+                status.textContent = "Authentication failed: " + error.message;
+            }
+        }
+
+        // Add event listener for the authentication button
+        document.getElementById("authenticateBtn").addEventListener("click", authenticate);
+    </script>
+
+</body>
+</html>
